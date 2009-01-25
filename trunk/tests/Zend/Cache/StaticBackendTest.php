@@ -66,15 +66,10 @@ class Zend_Cache_StaticBackendTest extends Zend_Cache_CommonBackendTest {
 
         $this->mkdir();
         $this->_instance->setDirectives(array('logging' => true));
-        if ($notag) {
-            $this->_instance->save('bar : data to cache', '/bar');
-            $this->_instance->save('bar2 : data to cache', '/bar2');
-            $this->_instance->save('bar3 : data to cache', '/bar3');
-        } else {
-            $this->_instance->save('bar : data to cache', '/bar', array('tag3', 'tag4'));
-            $this->_instance->save('bar2 : data to cache', '/bar2', array('tag3', 'tag1'));
-            $this->_instance->save('bar3 : data to cache', '/bar3', array('tag2', 'tag3'));
-        }
+
+        $this->_instance->save('bar : data to cache', '/bar', array('tag3', 'tag4'));
+        $this->_instance->save('bar2 : data to cache', '/bar2', array('tag3', 'tag1'));
+        $this->_instance->save('bar3 : data to cache', '/bar3', array('tag2', 'tag3'));
     }
 
     public function tearDown()
@@ -175,36 +170,31 @@ class Zend_Cache_StaticBackendTest extends Zend_Cache_CommonBackendTest {
     {
         $this->assertTrue($this->_instance->clean('matchingTag', array('tag3', 'tag4')));
         $this->assertFalse($this->_instance->test('/bar'));
-        $this->assertTrue($this->_instance->test('/bar2') > 999999);
     }
-
-
-    // Deferred tests
 
     public function testCleanModeNotMatchingTags()
     {
-        $this->markTestSkipped('Deferred Test');
         $this->assertTrue($this->_instance->clean('notMatchingTag', array('tag3')));
-        $this->assertTrue($this->_instance->test('/bar') > 999999);
-        $this->assertTrue($this->_instance->test('/bar2') > 999999);
+        $this->assertTrue($this->_instance->test('/bar'));
+        $this->assertTrue($this->_instance->test('/bar2'));
     }
 
     public function testCleanModeNotMatchingTags2()
     {
-        $this->markTestSkipped('Deferred Test');
         $this->assertTrue($this->_instance->clean('notMatchingTag', array('tag4')));
-        $this->assertTrue($this->_instance->test('/bar') > 999999);
+        $this->assertTrue($this->_instance->test('/bar'));
         $this->assertFalse($this->_instance->test('/bar2'));
     }
 
     public function testCleanModeNotMatchingTags3()
     {
-        $this->markTestSkipped('Deferred Test');
         $this->assertTrue($this->_instance->clean('notMatchingTag', array('tag4', 'tag1')));
-        $this->assertTrue($this->_instance->test('/bar') > 999999);
-        $this->assertTrue($this->_instance->test('/bar2') > 999999);
-        $this->assertFalse($this->_instance->test('/bar3'));
+        $this->assertTrue($this->_instance->test('/bar'));
+        $this->assertTrue($this->_instance->test('/bar2'));
+        $this->assertFalse($this->_instance->test('/bar3')); // should go! (tag3)
     }
+
+    // Deferred tests
 
     public function testCleanModeAll()
     {

@@ -13,6 +13,8 @@ require_once 'Zend/Cache/Backend.php';
 class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache_Backend_Interface
 {
 
+    const INNER_CACHE_NAME = 'zend_cache_backend_static_tagcache';
+
     protected $_options = array(
         'public_dir' => null,
         'file_extension' => '.html',
@@ -24,6 +26,8 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
     );
 
     protected $_tagCache = null;
+
+    protected $_tagged = null;
 
     public function setOption($name, $value)
     {
@@ -105,7 +109,16 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
         }
         @chmod($file, $this->_options['cache_file_umask']);
         if (count($tags) > 0) {
-            $this->_log('TAGS_UNSUPPORTED_BY_SAVE_OF_STATIC_BACKEND');
+            if (is_null($this->_tagged) && $tagged = $this->getInnerCache()->load(self::INNER_CACHE_NAME)) {
+                $this->_tagged = $tagged;
+            } elseif(is_null($this->_tagged)) {
+                $this->_tagged = array();
+            }
+            if (!isset($this->_tagged[$id])) {
+                $this->_tagged[$id] = array();
+            }
+            $this->_tagged[$id] = array_unique(array_merge($this->_tagged[$id], $tags));
+            $this->getInnerCache()->save($this->_tagged, self::INNER_CACHE_NAME);
         }
         return (bool) $result;
     }
@@ -172,26 +185,48 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
                 if (empty($tags)) {
                     throw new Zend_Exception('Cannot use tag matching modes as no tags were defined');
                 }
-                $innerCache = $this->getInnerCache();
-                if (!$tagged = $innerCache->load('zfextcache_tagged')) {
+                if (is_null($this->_tagged) && $tagged = $this->getInnerCache()->load(self::INNER_CACHE_NAME)) {
+                    $this->_tagged = $tagged;
+                } elseif(!$this->_tagged) {
                     return true;
                 }
                 foreach ($tags as $tag) {
-                    if (isset($tagged[$tag]) && !empty($tagged[$tag])) {
-                        foreach ($tagged[$tag] as $requestUri) {
-                            $this->remove($requestUri);
-                            $index = array_search($requestUri,$tagged[$tag]);
-                            unset($tagged[$tag][$index]);
+                    $urls = array_keys($this->_tagged);
+                    foreach ($urls as $url) {
+                        if (in_array($tag, $this->_tagged[$url])) {
+                            $this->remove($url);
+                            unset($this->_tagged[$url]);
                         }
                     }
                 }
-                $innerCache->save($tagged, 'zfextcache_tagged');
+                $this->getInnerCache()->save($this->_tagged, self::INNER_CACHE_NAME);
                 $result = true;
                 break;
             case Zend_Cache::CLEANING_MODE_ALL:
             case Zend_Cache::CLEANING_MODE_OLD:
+                $this->_log("Zend_Cache_Backend_Static : Selected Cleaning Mode Currently Unsupported By This Backend");
+                break;
             case Zend_Cache::CLEANING_MODE_NOT_MATCHING_TAG:
-                $this->_log('STATIC backend unsupported mode');
+                if (empty($tags)) {
+                    throw new Zend_Exception('Cannot use tag matching modes as no tags were defined');
+                }
+                if (is_null($this->_tagged) && $tagged = $this->getInnerCache()->load(self::INNER_CACHE_NAME)) {
+                    $this->_tagged = $tagged;
+                } elseif(is_null($this->_tagged)) {
+                    return true;
+                }
+                $urls = array_keys($this->_tagged);
+                foreach ($urls as $url) {
+                    foreach ($tags as $tag) {
+                        if (!in_array($tag, $this->_tagged[$url])) {
+                            $this->remove($url);
+                            unset($this->_tagged[$url]);
+                        }
+                        break;
+                    }
+                }
+                $this->getInnerCache()->save($this->_tagged, self::INNER_CACHE_NAME);
+                $result = true;
                 break;
             default:
                 Zend_Cache::throwException('Invalid mode for clean() method');
