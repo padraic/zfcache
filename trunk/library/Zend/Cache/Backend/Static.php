@@ -23,7 +23,7 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
         'tag_cache' => null
     );
 
-    protected $_innerCache = null;
+    protected $_tagCache = null;
 
     public function setOption($name, $value)
     {
@@ -202,15 +202,15 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
 
     public function setInnerCache(Zend_Cache_Core $cache)
     {
-        $this->_innerCache = $cache;
+        $this->_tagCache = $cache;
     }
 
     public function getInnerCache()
     {
-        if (is_null($this->_innerCache)) {
+        if (is_null($this->_tagCache)) {
             Zend_Cache::throwException('An Inner Cache has not been set; use setInnerCache()');
         }
-        return $this->_innerCache;
+        return $this->_tagCache;
     }
 
     protected function _verifyPath($path)
