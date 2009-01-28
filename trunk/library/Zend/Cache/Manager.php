@@ -1,5 +1,6 @@
 <?php
 
+/** Zend_Cache_Exception */
 require_once 'Zend/Cache/Exception.php';
 
 class Zend_Cache_Manager
@@ -62,12 +63,26 @@ class Zend_Cache_Manager
         )
     );
 
-    public function setCache($name, Zend_Cache_Core $cache) 
+    /**
+     * Set a new cache for the Cache Manager to contain
+     *
+     * @param string $name
+     * @param Zend_Cache_Core $cache
+     * @return void
+     */
+    public function setCache($name, Zend_Cache_Core $cache)
     {
         $this->_caches[$name] = $cache;
     }
 
-    public function hasCache($name) 
+    /**
+     * Check if the Cache Manager contains the named cache object, or a named
+     * configuration template to lazy load the cache object
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function hasCache($name)
     {
         if (isset($this->_caches[$name]) || $this->hasCacheTemplate($name)) {
             return true;
@@ -75,7 +90,14 @@ class Zend_Cache_Manager
         return false;
     }
 
-    public function getCache($name) 
+    /**
+     * Fetch the named cache object, or instantiate and return a cache object
+     * using a named configuration template
+     *
+     * @param string $name
+     * @return Zend_Cache_Core
+     */
+    public function getCache($name)
     {
         if (isset($this->_caches[$name])) {
             return $this->_caches[$name];
@@ -91,12 +113,26 @@ class Zend_Cache_Manager
         }
     }
 
-    public function setCacheTemplate($name, array $config) 
+    /**
+     * Set a named configuration template from which a cache object can later
+     * be lazy loaded
+     *
+     * @param string $name
+     * @param array $config
+     * @return void
+     */
+    public function setCacheTemplate($name, array $config)
     {
         $this->_configTemplates[$name] = $config;
     }
 
-    public function hasCacheTemplate($name) 
+    /**
+     * Check if the named configuration template
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function hasCacheTemplate($name)
     {
         if (isset($this->_configTemplates[$name])) {
             return true;
@@ -104,23 +140,44 @@ class Zend_Cache_Manager
         return false;
     }
 
-    public function getCacheTemplate($name) 
+    /**
+     * Get the named configuration template
+     *
+     * @param string $name
+     * @return array
+     */
+    public function getCacheTemplate($name)
     {
         if (isset($this->_configTemplates[$name])) {
             return $this->_configTemplates[$name];
         }
     }
 
+    /**
+     * Pass an array containing changes to be applied to a named configuration
+     * template
+     *
+     * @param string $name
+     * @param array $config
+     * @return void
+     */
     public function setTemplateConfig($name, array $config)
     {
         if (!isset($this->_configTemplates[$name])) {
             throw new Zend_Cache_Exception('A cache configuration template does not exist with the name "' . $name . '"');
         }
-        $this->_configTemplates[$name] 
+        $this->_configTemplates[$name]
             = $this->_mergeConfigs($this->_configTemplates[$name], $config);
     }
 
-    protected function _mergeConfigs(array $current, array $config) 
+    /**
+     * Simple method to merge two configuration arrays
+     *
+     * @param array $current
+     * @param array $config
+     * @return array
+     */
+    protected function _mergeConfigs(array $current, array $config)
     {
         if (isset($config['frontend']['name'])) {
             $current['frontend']['name'] = $config['frontend']['name'];
