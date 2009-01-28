@@ -5,9 +5,21 @@ require_once 'Zend/Cache/Exception.php';
 class Zend_Cache_Manager
 {
 
+    /**
+     * Array of caches stored by the Cache Manager instance
+     *
+     * @var array
+     */
     protected $_caches = array();
 
+    /**
+     * Array of ready made configuration templates for lazy
+     * loading caches.
+     *
+     * @var array
+     */
     protected $_configTemplates = array(
+        // Null Cache (Enforce Null/Empty Values)
         'skeleton' => array(
             'frontend' => array(
                 'name' => null,
@@ -18,6 +30,7 @@ class Zend_Cache_Manager
                 'options' => array()
             )
         ),
+        // Simple Common Default
         'default' => array(
             'frontend' => array(
                 'name' => 'Core',
@@ -32,6 +45,7 @@ class Zend_Cache_Manager
                 )
             )
         ),
+        // Static Page HTML Cache
         'page' => array(
             'frontend' => array(
                 'name' => 'Output',
