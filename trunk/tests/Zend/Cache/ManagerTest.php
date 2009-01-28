@@ -42,6 +42,81 @@ class Zend_Cache_ManagerTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($manager->getCache('cache1') instanceof Zend_Cache_Core);
     }
 
+    public function testLazyLoadsDefaultPageCache() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $this->assertTrue($manager->getCache('page') instanceof Zend_Cache_Frontend_Output);
+    }
+
+    public function testCanOverrideCacheFrontendNameConfiguration() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $manager->setTemplateConfig('page', array(
+            'frontend' => array(
+                'name'=> 'Page'
+            )    
+        ));
+        $this->assertTrue($manager->getCache('page') instanceof Zend_Cache_Frontend_Page);
+    }
+
+    public function testCanOverrideCacheBackendendNameConfiguration() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $manager->setTemplateConfig('page', array(
+            'backend' => array(
+                'name'=> 'File'
+            )    
+        ));
+        $this->assertTrue($manager->getCache('page')->getBackend() instanceof Zend_Cache_Backend_File);
+    }
+
+    public function testCanOverrideCacheFrontendOptionsConfiguration() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $manager->setTemplateConfig('page', array(
+            'frontend' => array(
+                'options'=> array(
+                    'lifetime' => 9999
+                )
+            )    
+        ));
+        $this->assertEquals(9999, $manager->getCache('page')->getOption('lifetime'));
+    }
+
+    public function testCanOverrideCacheBackendOptionsConfiguration() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $manager->setTemplateConfig('page', array(
+            'backend' => array(
+                'options'=> array(
+                    'sub_dir' => './cacheDir'
+                )
+            )    
+        ));
+        $this->assertEquals('./cacheDir', $manager->getCache('page')->getBackend()->getOption('sub_dir'));
+    }
+
+    public function testSetsConfigTemplate() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $config = array(
+            'frontend' => array(
+                'name' => 'Core',
+                'options' => array(
+                    'automatic_serialization' => true
+                )
+            ),
+            'backend' => array(
+                'name' => 'File',
+                'options' => array(
+                    'cache_dir' => '../cache'
+                )
+            )
+        );
+        $manager->setCacheTemplate('myCache', $config);
+        $this->assertSame($config, $manager->getCacheTemplate('myCache'));
+    }
+
     // Helper Methods
 
     public function mkdir()

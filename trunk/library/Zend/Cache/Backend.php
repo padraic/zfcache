@@ -111,6 +111,24 @@ class Zend_Cache_Backend
     }
 
     /**
+     * Get an option
+     *
+     * @param  string $name
+     * @throws Zend_Cache_Exception
+     * @return mixed
+     */
+    public function getOption($name)
+    {
+        if (!is_string($name)) {
+            Zend_Cache::throwException("Incorrect option name : $name");
+        }
+        $name = strtolower($name);
+        if (array_key_exists($name, $this->_options)) {
+            return $this->_options[$name];
+        }
+    }
+
+    /**
      * Get the life time
      *
      * if $specificLifetime is not false, the given specific life time is used

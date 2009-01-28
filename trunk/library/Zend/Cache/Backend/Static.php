@@ -17,6 +17,7 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
 
     protected $_options = array(
         'public_dir' => null,
+        'sub_dir' => 'html',
         'file_extension' => '.html',
         'index_filename' => 'index',
         'file_locking' => true,

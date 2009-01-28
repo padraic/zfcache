@@ -6,26 +6,36 @@ class Zend_Cache_Manager
     protected $_caches = array();
 
     protected $_configTemplates = array(
-        'page' => array(
-            'frontendName' => 'Output',
-            'backendName' => 'Static',
-            'frontendOptions' => array(),
-            'backendOptions' => array(
-                'public_dir' => '',
-                'cache_dir' => 'html',
-                'file_extension' => '.html',
-            )
-        ),
-        'tag_cache' => array(
-            'frontendName' => 'Core',
-            'backendName' => 'File',
-            'frontendOptions' => array(
-                'automatic_serialization' => true,
-                'lifetime' => null
+        'default' => array(
+            'frontend' => array(
+                'name' => 'Core',
+                'options' => array(
+                    'automatic_serialization' => true
+                )
             ),
-            'backendOptions' => array(
+            'backend' => array(
+                'name' => 'File',
+                'options' => array(
+                    'cache_dir' => '../cache'
+                )
             )
         ),
+        'page' => array(
+            'frontend' => array(
+                'name' => 'Output',
+                'options' => array(
+                    'ignore_user_abort' => true
+                )
+            ),
+            'backend' => array(
+                'name' => 'Static',
+                'options' => array(
+                    'public_dir' => '../public',
+                    'sub_dir' => 'html',
+                    'file_extension' => '.html',
+                )
+            )
+        )
     );
 
     public function setCache($name, Zend_Cache_Core $cache) 
@@ -35,6 +45,10 @@ class Zend_Cache_Manager
 
     public function hasCache($name) 
     {
+        if (isset($this->_caches[$name]) || isset($this->_configTemplates[$name])) {
+            return true;
+        }
+        return false;
     }
 
     public function getCache($name) 
@@ -44,25 +58,60 @@ class Zend_Cache_Manager
         }
         if (isset($this->_configTemplates[$name])) {
             $this->_caches[$name] = Zend_Cache::factory(
-                $this->_configTemplates[$name]['frontendName'],
-                $this->_configTemplates[$name]['backendName'],
-                $this->_configTemplates[$name]['frontendOptions'],
-                $this->_configTemplates[$name]['backendOptions']
+                $this->_configTemplates[$name]['frontend']['name'],
+                $this->_configTemplates[$name]['backend']['name'],
+                $this->_configTemplates[$name]['frontend']['options'],
+                $this->_configTemplates[$name]['backend']['options']
             );
             return $this->_caches[$name];
         }
     }
 
-    public function setCacheTemplate() 
+    public function setCacheTemplate($name, array $config) 
     {
+        $this->_cacheTemplates[$name] = $config;
     }
 
     public function hasCacheTemplate() 
     {
+        if (isset($this->_cacheTemplates[$name])) {
+            return true;
+        }
+        return false;
     }
 
-    public function getCacheTemplate() 
+    public function getCacheTemplate($name) 
     {
+        if (isset($this->_cacheTemplates[$name])) {
+            return $this->_cacheTemplates[$name];
+        }
+    }
+
+    public function setTemplateConfig($name, array $config)
+    {
+        if (!isset($this->_configTemplates[$name])) {
+            $this->_configTemplates[$name] = $this->_cacheTemplates['default'];
+        }
+        if (isset($config['frontend']['name'])) {
+            $this->_configTemplates[$name]['frontend']['name']
+                = $config['frontend']['name'];
+        }
+        if (isset($config['backend']['name'])) {
+            $this->_configTemplates[$name]['backend']['name']
+                = $config['backend']['name'];
+        }
+        if (isset($config['frontend']['options'])) {
+            foreach ($config['frontend']['options'] as $key=>$value) {
+                $this->_configTemplates[$name]['frontend']['options'][$key]
+                    = $value;
+            }
+        }
+        if (isset($config['backend']['options'])) {
+            foreach ($config['backend']['options'] as $key=>$value) {
+                $this->_configTemplates[$name]['backend']['options'][$key]
+                    = $value;
+            }
+        }
     }
 
 }
