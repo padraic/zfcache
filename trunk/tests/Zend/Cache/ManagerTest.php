@@ -80,7 +80,8 @@ class Zend_Cache_ManagerTest extends PHPUnit_Framework_TestCase
                 )
             )    
         ));
-        $this->assertEquals(9999, $manager->getCache('page')->getOption('lifetime'));
+        $config = $manager->getConfigTemplate('page');
+        $this->assertEquals(9999, $config['frontend']['options']['lifetime']);
     }
 
     public function testCanOverrideCacheBackendOptionsConfiguration() 
@@ -89,11 +90,12 @@ class Zend_Cache_ManagerTest extends PHPUnit_Framework_TestCase
         $manager->setTemplateConfig('page', array(
             'backend' => array(
                 'options'=> array(
-                    'sub_dir' => './cacheDir'
+                    'public_dir' => './cacheDir'
                 )
             )    
         ));
-        $this->assertEquals('./cacheDir', $manager->getCache('page')->getBackend()->getOption('sub_dir'));
+        $config = $manager->getConfigTemplate('page');
+        $this->assertEquals('./cacheDir', $config['backend']['options']['public_dir']);
     }
 
     public function testSetsConfigTemplate() 
@@ -113,8 +115,8 @@ class Zend_Cache_ManagerTest extends PHPUnit_Framework_TestCase
                 )
             )
         );
-        $manager->setCacheTemplate('myCache', $config);
-        $this->assertSame($config, $manager->getCacheTemplate('myCache'));
+        $manager->setConfigTemplate('myCache', $config);
+        $this->assertSame($config, $manager->getConfigTemplate('myCache'));
     }
 
     public function testConfigTemplatesDetectedAsAvailableCaches() 

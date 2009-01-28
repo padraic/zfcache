@@ -6,6 +6,16 @@ class Zend_Cache_Manager
     protected $_caches = array();
 
     protected $_configTemplates = array(
+        'skeleton' => array(
+            'frontend' => array(
+                'name' => 'Core',
+                'options' => array()
+            ),
+            'backend' => array(
+                'name' => 'File',
+                'options' => array()
+            )
+        ),
         'default' => array(
             'frontend' => array(
                 'name' => 'Core',
@@ -31,8 +41,8 @@ class Zend_Cache_Manager
                 'name' => 'Static',
                 'options' => array(
                     'public_dir' => '../public',
-                    'sub_dir' => 'html',
                     'file_extension' => '.html',
+                    'index_filename' => 'index'
                 )
             )
         )
@@ -45,7 +55,7 @@ class Zend_Cache_Manager
 
     public function hasCache($name) 
     {
-        if (isset($this->_caches[$name]) || isset($this->_configTemplates[$name])) {
+        if (isset($this->_caches[$name]) || $this->hasCacheTemplate($name)) {
             return true;
         }
         return false;
@@ -72,7 +82,7 @@ class Zend_Cache_Manager
         $this->_configTemplates[$name] = $config;
     }
 
-    public function hasCacheTemplate() 
+    public function hasCacheTemplate($name) 
     {
         if (isset($this->_configTemplates[$name])) {
             return true;
