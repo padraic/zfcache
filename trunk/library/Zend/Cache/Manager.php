@@ -1,5 +1,7 @@
 <?php
 
+require_once 'Zend/Cache/Exception.php';
+
 class Zend_Cache_Manager
 {
 
@@ -98,7 +100,7 @@ class Zend_Cache_Manager
     public function setTemplateConfig($name, array $config)
     {
         if (!isset($this->_configTemplates[$name])) {
-            $this->_configTemplates[$name] = $this->_configTemplates['skeleton'];
+            throw new Zend_Cache_Exception('A cache configuration template does not exist with the name "' . $name . '"');
         }
         $this->_configTemplates[$name] 
             = $this->_mergeConfigs($this->_configTemplates[$name], $config);

@@ -43,6 +43,8 @@ require_once 'Zend/Cache/PageFrontendTest.php';
 require_once 'Zend/Cache/ZendPlatformBackendTest.php';
 require_once 'Zend/Cache/SkipTests.php';
 require_once 'Zend/Cache/TwoLevelsBackendTest.php';
+
+require_once 'Zend/Cache/ManagerTest.php';
 require_once 'Zend/Cache/StaticBackendTest.php';
 
 /**
@@ -71,6 +73,9 @@ class Zend_Cache_AllTests
         $suite->addTestSuite('Zend_Cache_ClassFrontendTest');
         $suite->addTestSuite('Zend_Cache_FileFrontendTest');
         $suite->addTestSuite('Zend_Cache_PageFrontendTest');
+
+        // Zend_Cache Enhanced
+        $suite->addTestSuite('Zend_Cache_ManagerTest');
         $suite->addTestSuite('Zend_Cache_StaticBackendTest');
 
         /*
