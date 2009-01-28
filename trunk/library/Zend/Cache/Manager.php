@@ -69,12 +69,12 @@ class Zend_Cache_Manager
 
     public function setCacheTemplate($name, array $config) 
     {
-        $this->_cacheTemplates[$name] = $config;
+        $this->_configTemplates[$name] = $config;
     }
 
     public function hasCacheTemplate() 
     {
-        if (isset($this->_cacheTemplates[$name])) {
+        if (isset($this->_configTemplates[$name])) {
             return true;
         }
         return false;
@@ -82,15 +82,15 @@ class Zend_Cache_Manager
 
     public function getCacheTemplate($name) 
     {
-        if (isset($this->_cacheTemplates[$name])) {
-            return $this->_cacheTemplates[$name];
+        if (isset($this->_configTemplates[$name])) {
+            return $this->_configTemplates[$name];
         }
     }
 
     public function setTemplateConfig($name, array $config)
     {
         if (!isset($this->_configTemplates[$name])) {
-            $this->_configTemplates[$name] = $this->_cacheTemplates['default'];
+            $this->_configTemplates[$name] = $this->_configTemplates['default'];
         }
         if (isset($config['frontend']['name'])) {
             $this->_configTemplates[$name]['frontend']['name']

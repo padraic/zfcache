@@ -117,6 +117,12 @@ class Zend_Cache_ManagerTest extends PHPUnit_Framework_TestCase
         $this->assertSame($config, $manager->getCacheTemplate('myCache'));
     }
 
+    public function testConfigTemplatesDetectedAsAvailableCaches() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $this->assertTrue($manager->hasCache('page'));
+    }
+
     // Helper Methods
 
     public function mkdir()
