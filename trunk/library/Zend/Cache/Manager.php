@@ -8,11 +8,11 @@ class Zend_Cache_Manager
     protected $_configTemplates = array(
         'skeleton' => array(
             'frontend' => array(
-                'name' => 'Core',
+                'name' => null,
                 'options' => array()
             ),
             'backend' => array(
-                'name' => 'File',
+                'name' => null,
                 'options' => array()
             )
         ),
@@ -41,8 +41,6 @@ class Zend_Cache_Manager
                 'name' => 'Static',
                 'options' => array(
                     'public_dir' => '../public',
-                    'file_extension' => '.html',
-                    'index_filename' => 'index'
                 )
             )
         )
@@ -100,28 +98,31 @@ class Zend_Cache_Manager
     public function setTemplateConfig($name, array $config)
     {
         if (!isset($this->_configTemplates[$name])) {
-            $this->_configTemplates[$name] = $this->_configTemplates['default'];
+            $this->_configTemplates[$name] = $this->_configTemplates['skeleton'];
         }
+        $this->_configTemplates[$name] 
+            = $this->_mergeConfigs($this->_configTemplates[$name], $config);
+    }
+
+    protected function _mergeConfigs(array $current, array $config) 
+    {
         if (isset($config['frontend']['name'])) {
-            $this->_configTemplates[$name]['frontend']['name']
-                = $config['frontend']['name'];
+            $current['frontend']['name'] = $config['frontend']['name'];
         }
         if (isset($config['backend']['name'])) {
-            $this->_configTemplates[$name]['backend']['name']
-                = $config['backend']['name'];
+            $current['backend']['name'] = $config['backend']['name'];
         }
         if (isset($config['frontend']['options'])) {
             foreach ($config['frontend']['options'] as $key=>$value) {
-                $this->_configTemplates[$name]['frontend']['options'][$key]
-                    = $value;
+                $current['frontend']['options'][$key] = $value;
             }
         }
         if (isset($config['backend']['options'])) {
             foreach ($config['backend']['options'] as $key=>$value) {
-                $this->_configTemplates[$name]['backend']['options'][$key]
-                    = $value;
+                $current['backend']['options'][$key] = $value;
             }
         }
+        return $current;
     }
 
 }
