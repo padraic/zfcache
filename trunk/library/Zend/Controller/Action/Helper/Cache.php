@@ -66,9 +66,9 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      * @param array $args
      * @return mixed
      */
-    protected function __call($method, $args)
+    public function __call($method, $args)
     {
-        if (method_exists($method, $this->getManager())) {
+        if (method_exists($this->getManager(), $method)) {
             return call_user_func_array(array($this->getManager(), $method), $args);
         }
     }

@@ -51,6 +51,18 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
     {
     }
 
+    public function testGetterInstantiatesManager() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $this->assertTrue($helper->getManager() instanceof Zend_Cache_Manager);
+    }
+
+    public function testMethodsProxyToManager() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $this->assertTrue($helper->hasCache('page'));
+    }
+
 
 }
 
