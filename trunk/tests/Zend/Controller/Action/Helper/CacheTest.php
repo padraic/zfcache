@@ -116,6 +116,25 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('verified', $helper->removePagesTagged(array('tag1')));
     }
 
+    public function testPreDispatchCallsCachesStartMethod() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $cache = new Mock_Zend_Cache_Page_4;
+        $helper->setCache('page', $cache);
+        $helper->direct(array('baz'));
+        $helper->preDispatch();
+        $this->assertEquals('verified', $cache->res);
+    }
+
+    public function testPreDispatchDoesNotCallCachesStartMethodWithBadAction() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $cache = new Mock_Zend_Cache_Page_4;
+        $helper->setCache('page', $cache);
+        $helper->preDispatch();
+        $this->assertNotEquals('verified', $cache->res);
+    }
+
 }
 
 class Mock_Zend_Cache_Page_1 extends Zend_Cache_Core
@@ -136,7 +155,16 @@ class Mock_Zend_Cache_Page_3 extends Zend_Cache_Core
 {
     public function clean($mode = 'all', $tags = array()) 
     {
-        if ($mode == 'matchingAnyTag' && $tags == array('tag1')) {return 'verified';}
+        if ($mode == 'matchingAnyTag' && $tags == array('tag1'))
+        {return 'verified';}
+    }
+}
+class Mock_Zend_Cache_Page_4 extends Zend_Cache_Core
+{
+    public $res;
+    public function start() 
+    {
+        $this->res = 'verified';
     }
 }
 

@@ -39,6 +39,11 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      */
     protected $_tags = array();
 
+    /**
+     * Track output buffering condition
+     */
+    protected $_obStarted = false;
+
     public function direct(array $actions, array $tags = array())
     {
         $controller = $this->getRequest()->getControllerName();
@@ -80,6 +85,13 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
 
     public function preDispatch()
     {
+        $controller = $this->getRequest()->getControllerName();
+        $action = $this->getRequest()->getActionName();
+        if (isset($this->_caching[$controller]) &&
+        in_array($action, $this->_caching[$controller])) {
+            $this->getCache('page')->start();
+            $this->_obStarted = true;
+        }
     }
 
     public function postDispatch()
