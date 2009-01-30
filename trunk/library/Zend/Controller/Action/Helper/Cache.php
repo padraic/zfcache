@@ -142,6 +142,7 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
                 $tags = array_unique($this->_tags[$controller][$action]);
             }
             $this->getCache('page')->end($tags);
+            $this->_obStarted = false;
         }
     }
 
