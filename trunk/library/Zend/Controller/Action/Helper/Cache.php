@@ -10,7 +10,9 @@ require_once 'Zend/Controller/Action/Helper/Abstract.php';
  */
 require_once 'Zend/Controller/Action/Exception.php';
 
-/** Zend_Controller_Action_Helper_Abstract */
+/**
+ * @see Zend_Cache_Manager
+ */
 require_once 'Zend/Cache/Manager.php';
 
 class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_Abstract
@@ -23,8 +25,37 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      */
     protected $_manager = null;
 
-    public function direct()
+    /**
+     * Indexed map of Action to attempt Page caching on
+     *
+     * @var array
+     */
+    protected $_caching = array();
+
+    protected $_tags = array();
+
+    public function direct(array $actions, array $tags = array())
     {
+        $controller = $this->getRequest()->getControllerName();
+        $actions = array_unique($actions);
+        if (!isset($this->_caching[$controller])) {
+            $this->_caching[$controller] = array();
+        }
+        if (!empty($tags)) {
+            $tags = array_unique($tags);
+            if (!isset($this->_tags[$controller])) {
+                $this->_tags[$controller] = array();
+            }
+        }
+        foreach ($actions as $action) {
+            $this->_caching[$controller][] = $action;
+            if (!empty($tags)) {
+                $this->_tags[$controller][$action] = array();
+                foreach ($tags as $tag) {
+                    $this->_tags[$controller][$action][] = $tag;
+                }
+            }
+        }
     }
 
     public function preDispatch()
@@ -57,6 +88,16 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
             $this->_manager = new Zend_Cache_Manager;
         }
         return $this->_manager;
+    }
+
+    /**
+     * Return a list of actions for the current Controller marked for caching
+     *
+     * @return array
+     */
+    public function getCacheableActions() 
+    {
+        return $this->_caching;
     }
 
     /**

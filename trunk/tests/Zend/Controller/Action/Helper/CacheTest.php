@@ -11,6 +11,7 @@ require_once "PHPUnit/Framework/TestSuite.php";
 require_once 'Zend/Controller/Action/Helper/Cache.php';
 require_once 'Zend/Controller/Action/HelperBroker.php';
 require_once 'Zend/Controller/Front.php';
+require_once 'Zend/Controller/Request/Http.php';
 require_once 'Zend/Controller/Response/Http.php';
 
 /**
@@ -30,23 +31,17 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
         $result = PHPUnit_TextUI_TestRunner::run($suite);
     }
 
-    /**
-     * Sets up the fixture, for example, open a network connection.
-     * This method is called before a test is executed.
-     *
-     * @return void
-     */
     public function setUp()
     {
-
+        $this->front = Zend_Controller_Front::getInstance();
+        $this->front->resetInstance();
+        $this->request = new Zend_Controller_Request_Http();
+        $this->request->setModuleName('foo')
+                ->setControllerName('bar')
+                ->setActionName('baz');
+        $this->front->setRequest($this->request);
     }
 
-    /**
-     * Tears down the fixture, for example, close a network connection.
-     * This method is called after a test is executed.
-     *
-     * @return void
-     */
     public function tearDown()
     {
     }
@@ -61,6 +56,15 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
     {
         $helper = new Zend_Controller_Action_Helper_Cache;
         $this->assertTrue($helper->hasCache('page'));
+    }
+
+    public function testCacheableActionsStoredPreDispatch() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $helper->setFrontController($this->front);
+        $helper->direct(array('action1'), array('tag1'));
+        $cacheable = $helper->getCacheableActions();
+        $this->assertEquals('action1', $cacheable['bar'][0]);
     }
 
 

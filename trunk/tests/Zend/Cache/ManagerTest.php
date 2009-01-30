@@ -125,6 +125,13 @@ class Zend_Cache_ManagerTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($manager->hasCache('page'));
     }
 
+    public function testGettingPageCacheAlsoCreatesTagCache() 
+    {
+        $manager = new Zend_Cache_Manager;
+        $tagCache = $manager->getCache('page')->getBackend()->getOption('tag_cache');
+        $this->assertTrue($tagCache instanceof Zend_Cache_Core);
+    }
+
     // Helper Methods
 
     public function mkdir()
