@@ -101,6 +101,16 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
     }
 
     /**
+     * Return a list of tags set for all cacheable actions
+     *
+     * @return array
+     */
+    public function getCacheableTags() 
+    {
+        return $this->_tags;
+    }
+
+    /**
      * Proxy non-matched methods back to Zend_Cache_Manager where appropriate
      *
      * @param string $method

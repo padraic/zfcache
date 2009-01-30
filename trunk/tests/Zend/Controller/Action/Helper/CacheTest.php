@@ -58,15 +58,41 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($helper->hasCache('page'));
     }
 
-    public function testCacheableActionsStoredPreDispatch() 
+    public function testCacheableActionsStoredAtInit() 
     {
         $helper = new Zend_Controller_Action_Helper_Cache;
         $helper->setFrontController($this->front);
-        $helper->direct(array('action1'), array('tag1'));
+        $helper->direct(array('action1'));
         $cacheable = $helper->getCacheableActions();
         $this->assertEquals('action1', $cacheable['bar'][0]);
     }
 
+    public function testCacheableActionTagsStoredAtInit() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $helper->setFrontController($this->front);
+        $helper->direct(array('action1'), array('tag1','tag2'));
+        $cacheable = $helper->getCacheableTags();
+        $this->assertSame(array('tag1','tag2'), $cacheable['bar']['action1']);
+    }
+
+    public function testCacheableActionsNeverDuplicated() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $helper->setFrontController($this->front);
+        $helper->direct(array('action1','action1'));
+        $cacheable = $helper->getCacheableActions();
+        $this->assertEquals('action1', $cacheable['bar'][0]);
+    }
+
+    public function testCacheableActionTagsNeverDuplicated() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $helper->setFrontController($this->front);
+        $helper->direct(array('action1'), array('tag1','tag1','tag2','tag2'));
+        $cacheable = $helper->getCacheableTags();
+        $this->assertSame(array('tag1','tag2'), $cacheable['bar']['action1']);
+    }
 
 }
 
