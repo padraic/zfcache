@@ -44,6 +44,14 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      */
     protected $_obStarted = false;
 
+    /**
+     * Tell the helper which actions are cacheable and under which
+     * tags (if applicable) they should be recorded with
+     *
+     * @param array $actions
+     * @param array $tags
+     * @return void
+     */
     public function direct(array $actions, array $tags = array())
     {
         $controller = $this->getRequest()->getControllerName();
@@ -68,6 +76,16 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
         }
     }
 
+    /**
+     * Remove a specific page cache static file based on its
+     * relative URL from the application's public directory.
+     * The file extension is not required here; usually matches
+     * the original REQUEST_URI that was cached.
+     *
+     * @param string $relativeUrl
+     * @param bool $recursive
+     * @return mixed
+     */
     public function removePage($relativeUrl, $recursive = false) 
     {
         if ($recursive) {
@@ -77,25 +95,54 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
         }
     }
 
+    /**
+     * Remove a specific page cache static file based on its
+     * relative URL from the application's public directory.
+     * The file extension is not required here; usually matches
+     * the original REQUEST_URI that was cached.
+     *
+     * @param array $tags
+     * @return mixed
+     */
     public function removePagesTagged(array $tags) 
     {
         return $this->getCache('page')
             ->clean(Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG, $tags);
     }
 
+    /**
+     * Commence page caching for any cacheable actions
+     *
+     * @return void
+     */
     public function preDispatch()
     {
         $controller = $this->getRequest()->getControllerName();
         $action = $this->getRequest()->getActionName();
         if (isset($this->_caching[$controller]) &&
         in_array($action, $this->_caching[$controller])) {
-            $this->getCache('page')->start();
+            $reqUri = $this->getRequest()->getRequestUri();
+            $this->getCache('page')->start($reqUri);
             $this->_obStarted = true;
         }
     }
 
+    /**
+     * Complete any output buffering underway by the Page Cache
+     *
+     * @return void
+     */
     public function postDispatch()
     {
+        if ($this->_obStarted) {
+            $controller = $this->getRequest()->getControllerName();
+            $action = $this->getRequest()->getActionName();
+            $tags = array();
+            if (isset($this->_tags[$controller][$action]) && !empty($this->_tags[$controller][$action])) {
+                $tags = array_unique($this->_tags[$controller][$action]);
+            }
+            $this->getCache('page')->end($tags);
+        }
     }
 
     /**

@@ -21,6 +21,9 @@ require_once 'Zend/Cache/Core.php';
  */
 class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
 {
+
+    protected $_requestUriOld;
+
     /**
      * Runs the test methods of this class.
      *
@@ -35,6 +38,9 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+        $this->_requestUriOld =
+            isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null;
+        $_SERVER['REQUEST_URI'] = '/foo';
         $this->front = Zend_Controller_Front::getInstance();
         $this->front->resetInstance();
         $this->request = new Zend_Controller_Request_Http();
@@ -46,6 +52,7 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
 
     public function tearDown()
     {
+        $_SERVER['REQUEST_URI'] = $this->_requestUriOld;
     }
 
     public function testGetterInstantiatesManager() 
@@ -135,8 +142,36 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals('verified', $cache->res);
     }
 
+    public function testPostDispatchEndsOutputBufferPageCaching() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $cache = new Mock_Zend_Cache_Page_5;
+        $helper->setCache('page', $cache);
+        $helper->direct(array('baz'));
+        $helper->preDispatch();
+        $helper->postDispatch();
+        $this->assertEquals('verified', $cache->res);
+    }
+
+    public function testPostDispatchNotEndsOutputBufferPageCachingWithBadAction() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $cache = new Mock_Zend_Cache_Page_5;
+        $helper->setCache('page', $cache);
+        $helper->direct(array('action1'));
+        $helper->preDispatch();
+        $helper->postDispatch();
+        $this->assertNotEquals('verified', $cache->res);
+    }
+
 }
 
+class Mock_Zend_Cache_Page_5 extends Zend_Cache_Core
+{
+    public $res;
+    public function start() {}
+    public function end() {$this->res = 'verified';}
+}
 class Mock_Zend_Cache_Page_1 extends Zend_Cache_Core
 {
     public function remove($id) 
@@ -162,10 +197,9 @@ class Mock_Zend_Cache_Page_3 extends Zend_Cache_Core
 class Mock_Zend_Cache_Page_4 extends Zend_Cache_Core
 {
     public $res;
-    public function start() 
-    {
+    public function start($id) {if ($id == '/foo') {
         $this->res = 'verified';
-    }
+    }}
 }
 
 if (PHPUnit_MAIN_METHOD == "Zend_Controller_Action_Helper_CacheTest::main") {
