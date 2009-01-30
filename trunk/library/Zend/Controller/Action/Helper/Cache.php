@@ -26,12 +26,17 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
     protected $_manager = null;
 
     /**
-     * Indexed map of Action to attempt Page caching on
+     * Indexed map of Actions to attempt Page caching on by Controller
      *
      * @var array
      */
     protected $_caching = array();
 
+    /**
+     * Indexed map of Tags by Controller and Action
+     *
+     * @var array
+     */
     protected $_tags = array();
 
     public function direct(array $actions, array $tags = array())
@@ -56,6 +61,21 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
                 }
             }
         }
+    }
+
+    public function removePage($relativeUrl, $recursive = false) 
+    {
+        if ($recursive) {
+            return $this->getCache('page')->removeRecursive($relativeUrl);
+        } else {
+            return $this->getCache('page')->remove($relativeUrl);
+        }
+    }
+
+    public function removePagesTagged(array $tags) 
+    {
+        return $this->getCache('page')
+            ->clean(Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG, $tags);
     }
 
     public function preDispatch()
@@ -122,6 +142,7 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
         if (method_exists($this->getManager(), $method)) {
             return call_user_func_array(array($this->getManager(), $method), $args);
         }
+        throw new Zend_Controller_Action_Exception('Method does not exist:' . $method);
     }
 
 }

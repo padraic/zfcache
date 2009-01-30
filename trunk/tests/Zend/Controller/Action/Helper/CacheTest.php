@@ -13,6 +13,8 @@ require_once 'Zend/Controller/Action/HelperBroker.php';
 require_once 'Zend/Controller/Front.php';
 require_once 'Zend/Controller/Request/Http.php';
 require_once 'Zend/Controller/Response/Http.php';
+require_once 'Zend/Cache.php';
+require_once 'Zend/Cache/Core.php';
 
 /**
  * Test class for Zend_Controller_Action_Helper_Cache
@@ -61,7 +63,6 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
     public function testCacheableActionsStoredAtInit() 
     {
         $helper = new Zend_Controller_Action_Helper_Cache;
-        $helper->setFrontController($this->front);
         $helper->direct(array('action1'));
         $cacheable = $helper->getCacheableActions();
         $this->assertEquals('action1', $cacheable['bar'][0]);
@@ -70,7 +71,6 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
     public function testCacheableActionTagsStoredAtInit() 
     {
         $helper = new Zend_Controller_Action_Helper_Cache;
-        $helper->setFrontController($this->front);
         $helper->direct(array('action1'), array('tag1','tag2'));
         $cacheable = $helper->getCacheableTags();
         $this->assertSame(array('tag1','tag2'), $cacheable['bar']['action1']);
@@ -79,7 +79,6 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
     public function testCacheableActionsNeverDuplicated() 
     {
         $helper = new Zend_Controller_Action_Helper_Cache;
-        $helper->setFrontController($this->front);
         $helper->direct(array('action1','action1'));
         $cacheable = $helper->getCacheableActions();
         $this->assertEquals('action1', $cacheable['bar'][0]);
@@ -88,12 +87,57 @@ class Zend_Controller_Action_Helper_CacheTest extends PHPUnit_Framework_TestCase
     public function testCacheableActionTagsNeverDuplicated() 
     {
         $helper = new Zend_Controller_Action_Helper_Cache;
-        $helper->setFrontController($this->front);
         $helper->direct(array('action1'), array('tag1','tag1','tag2','tag2'));
         $cacheable = $helper->getCacheableTags();
         $this->assertSame(array('tag1','tag2'), $cacheable['bar']['action1']);
     }
 
+    public function testRemovePageCallsPageCacheRemoveMethodCorrectly() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $cache = new Mock_Zend_Cache_Page_1;
+        $helper->setCache('page', $cache);
+        $this->assertEquals('verified', $helper->removePage('/foo'));
+    }
+
+    public function testRemovePageCallsPageCacheRemoveRecursiveMethodCorrectly() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $cache = new Mock_Zend_Cache_Page_2;
+        $helper->setCache('page', $cache);
+        $this->assertEquals('verified', $helper->removePage('/foo', true));
+    }
+
+    public function testRemovePagesTaggedCallsPageCacheCleanMethodCorrectly() 
+    {
+        $helper = new Zend_Controller_Action_Helper_Cache;
+        $cache = new Mock_Zend_Cache_Page_3;
+        $helper->setCache('page', $cache);
+        $this->assertEquals('verified', $helper->removePagesTagged(array('tag1')));
+    }
+
+}
+
+class Mock_Zend_Cache_Page_1 extends Zend_Cache_Core
+{
+    public function remove($id) 
+    {
+        if ($id == '/foo') {return 'verified';}
+    }
+}
+class Mock_Zend_Cache_Page_2 extends Zend_Cache_Core
+{
+    public function removeRecursive($id) 
+    {
+        if ($id == '/foo') {return 'verified';}
+    }
+}
+class Mock_Zend_Cache_Page_3 extends Zend_Cache_Core
+{
+    public function clean($mode = 'all', $tags = array()) 
+    {
+        if ($mode == 'matchingAnyTag' && $tags == array('tag1')) {return 'verified';}
+    }
 }
 
 if (PHPUnit_MAIN_METHOD == "Zend_Controller_Action_Helper_CacheTest::main") {
