@@ -86,7 +86,7 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      * @param bool $recursive
      * @return mixed
      */
-    public function removePage($relativeUrl, $recursive = false) 
+    public function removePage($relativeUrl, $recursive = false)
     {
         if ($recursive) {
             return $this->getCache('page')->removeRecursive($relativeUrl);
@@ -104,7 +104,7 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      * @param array $tags
      * @return mixed
      */
-    public function removePagesTagged(array $tags) 
+    public function removePagesTagged(array $tags)
     {
         return $this->getCache('page')
             ->clean(Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG, $tags);
@@ -119,30 +119,21 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
     {
         $controller = $this->getRequest()->getControllerName();
         $action = $this->getRequest()->getActionName();
-        if (isset($this->_caching[$controller]) &&
+        $stats = ob_get_status(true);
+        foreach ($stats as $status) {
+            if ($status['name'] == 'Zend_Cache_Frontend_Page::_flush'
+            || $status['name'] == 'Zend_Cache_Frontend_Capture::_flush') {
+                $obStarted = true;
+            }
+        }
+        if (!isset($obStarted) && isset($this->_caching[$controller]) &&
         in_array($action, $this->_caching[$controller])) {
             $reqUri = $this->getRequest()->getRequestUri();
-            $this->getCache('page')->start($reqUri);
-            $this->_obStarted = true;
-        }
-    }
-
-    /**
-     * Complete any output buffering underway by the Page Cache
-     *
-     * @return void
-     */
-    public function postDispatch()
-    {
-        if ($this->_obStarted) {
-            $controller = $this->getRequest()->getControllerName();
-            $action = $this->getRequest()->getActionName();
             $tags = array();
             if (isset($this->_tags[$controller][$action]) && !empty($this->_tags[$controller][$action])) {
                 $tags = array_unique($this->_tags[$controller][$action]);
             }
-            $this->getCache('page')->end($tags);
-            $this->_obStarted = false;
+            $this->getCache('page')->start($reqUri, $tags);
         }
     }
 
@@ -175,7 +166,7 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      *
      * @return array
      */
-    public function getCacheableActions() 
+    public function getCacheableActions()
     {
         return $this->_caching;
     }
@@ -185,7 +176,7 @@ class Zend_Controller_Action_Helper_Cache extends Zend_Controller_Action_Helper_
      *
      * @return array
      */
-    public function getCacheableTags() 
+    public function getCacheableTags()
     {
         return $this->_tags;
     }
