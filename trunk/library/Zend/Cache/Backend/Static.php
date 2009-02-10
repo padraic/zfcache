@@ -278,19 +278,19 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
                 if (empty($tags)) {
                     throw new Zend_Exception('Cannot use tag matching modes as no tags were defined');
                 }
-                if (is_null($this->_tagged) && $tagged = $this->getInnerCache()->load(self::INNER_CACHE_NAME)) {
+                if (is_null($this->_tagged)) {
+                    $tagged = $this->getInnerCache()->load(self::INNER_CACHE_NAME);
                     $this->_tagged = $tagged;
-                } elseif(is_null($this->_tagged)) {
+                }
+                if(is_null($this->_tagged) || empty($this->_tagged)) {
                     return true;
                 }
                 $urls = array_keys($this->_tagged);
                 foreach ($urls as $url) {
-                    foreach ($tags as $tag) {
-                        if (!in_array($tag, $this->_tagged[$url])) {
-                            $this->remove($url);
-                            unset($this->_tagged[$url]);
-                        }
-                        break;
+                    $difference = array_diff($tags, $this->_tagged[$url]);
+                    if (count($tags) == count($difference)) {
+                        $this->remove($url);
+                        unset($this->_tagged[$url]);
                     }
                 }
                 $this->getInnerCache()->save($this->_tagged, self::INNER_CACHE_NAME);
@@ -315,6 +315,7 @@ class Zend_Cache_Backend_Static extends Zend_Cache_Backend implements Zend_Cache
     public function setInnerCache(Zend_Cache_Core $cache)
     {
         $this->_tagCache = $cache;
+        $this->_options['tag_cache'] = $cache;
     }
 
     /**

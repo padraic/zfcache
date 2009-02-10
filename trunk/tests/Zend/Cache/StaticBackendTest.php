@@ -191,7 +191,7 @@ class Zend_Cache_StaticBackendTest extends Zend_Cache_CommonBackendTest {
         $this->assertTrue($this->_instance->clean('notMatchingTag', array('tag4', 'tag1')));
         $this->assertTrue($this->_instance->test('/bar'));
         $this->assertTrue($this->_instance->test('/bar2'));
-        $this->assertFalse($this->_instance->test('/bar3')); // should go! (tag3)
+        $this->assertFalse($this->_instance->test('/bar3'));
     }
 
     // Deferred tests

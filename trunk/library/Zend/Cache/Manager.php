@@ -124,7 +124,7 @@ class Zend_Cache_Manager
         }
         if (isset($this->_configTemplates[$name])) {
             if ($name == self::PAGECACHE && 
-            (is_null($this->_configTemplates[$name]['backend']['options']['tag_cache']) || 
+            (!isset($this->_configTemplates[$name]['backend']['options']['tag_cache']) || 
             !$this->_configTemplates[$name]['backend']['options']['tag_cache'] instanceof 
             Zend_Cache_Core)) {
                 $this->_configTemplates[$name]['backend']['options']['tag_cache']
