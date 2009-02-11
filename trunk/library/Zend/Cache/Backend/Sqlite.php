@@ -83,7 +83,7 @@ class Zend_Cache_Backend_Sqlite extends Zend_Cache_Backend implements Zend_Cache
     public function __construct(array $options = array())
     {
         parent::__construct($options);
-        if (is_null($this->_options['cache_db_complete_path'])) {
+        if ($this->_options['cache_db_complete_path'] === null) {
             Zend_Cache::throwException('cache_db_complete_path option has to set');
         }
         if (!extension_loaded('sqlite')) {
@@ -111,7 +111,6 @@ class Zend_Cache_Backend_Sqlite extends Zend_Cache_Backend implements Zend_Cache
      */
     public function load($id, $doNotTestCacheValidity = false)
     {
-        self::_validateIdOrTag($id);
         $this->_checkAndBuildStructure();
         $sql = "SELECT content FROM cache WHERE id='$id'";
         if (!$doNotTestCacheValidity) {
@@ -133,7 +132,6 @@ class Zend_Cache_Backend_Sqlite extends Zend_Cache_Backend implements Zend_Cache
      */
     public function test($id)
     {
-        self::_validateIdOrTag($id);
         $this->_checkAndBuildStructure();
         $sql = "SELECT lastModified FROM cache WHERE id='$id' AND (expire=0 OR expire>" . time() . ')';
         $result = $this->_query($sql);
@@ -159,13 +157,11 @@ class Zend_Cache_Backend_Sqlite extends Zend_Cache_Backend implements Zend_Cache
      */
     public function save($data, $id, $tags = array(), $specificLifetime = false)
     {
-        self::_validateIdOrTag($id);
-        self::_validateTagsArray($tags);
         $this->_checkAndBuildStructure();
         $lifetime = $this->getLifetime($specificLifetime);
         $data = @sqlite_escape_string($data);
         $mktime = time();
-        if (is_null($lifetime)) {
+        if ($lifetime === null) {
             $expire = 0;
         } else {
             $expire = $mktime + $lifetime;
@@ -192,7 +188,6 @@ class Zend_Cache_Backend_Sqlite extends Zend_Cache_Backend implements Zend_Cache
      */
     public function remove($id)
     {
-        self::_validateIdOrTag($id);
         $this->_checkAndBuildStructure();
         $res = $this->_query("SELECT COUNT(*) AS nbr FROM cache WHERE id='$id'");
         $result1 = @sqlite_fetch_single($res);
@@ -221,7 +216,6 @@ class Zend_Cache_Backend_Sqlite extends Zend_Cache_Backend implements Zend_Cache
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
-        self::_validateTagsArray($tags);
         $this->_checkAndBuildStructure();
         $return = $this->_clean($mode, $tags);
         $this->_automaticVacuum();

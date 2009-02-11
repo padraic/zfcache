@@ -313,12 +313,13 @@ class Zend_Cache_Core
         if (!$this->_options['caching']) {
             return true;
         }
-        if (is_null($id)) {
+        if ($id === null) {
             $id = $this->_lastId;
         } else {
             $id = $this->_id($id);
         }
         self::_validateIdOrTag($id);
+        self::_validateTagsArray($tags);
         if ($this->_options['automatic_serialization']) {
             // we need to serialize datas before storing them
             $data = serialize($data);
@@ -424,6 +425,7 @@ class Zend_Cache_Core
                                    Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG))) {
             Zend_Cache::throwException('Invalid cleaning mode');
         }
+        self::_validateTagsArray($tags);
         return $this->_backend->clean($mode, $tags);
     }
 
@@ -523,6 +525,48 @@ class Zend_Cache_Core
     }
 
     /**
+     * Validate a cache id or a tag (security, reliable filenames, reserved prefixes...)
+     *
+     * Throw an exception if a problem is found
+     *
+     * @param  string $string Cache id or tag
+     * @throws Zend_Cache_Exception
+     * @return void
+     */
+    private static function _validateIdOrTag($string)
+    {
+        if (!is_string($string)) {
+            Zend_Cache::throwException('Invalid id or tag : must be a string');
+        }
+        if (substr($string, 0, 9) == 'internal-') {
+            Zend_Cache::throwException('"internal-*" ids or tags are reserved');
+        }
+        if (!preg_match('~^[\w]+$~D', $string)) {
+            Zend_Cache::throwException("Invalid id or tag '$string' : must use only [a-zA-Z0-9_]");
+        }
+    }
+
+    /**
+     * Validate a tags array (security, reliable filenames, reserved prefixes...)
+     *
+     * Throw an exception if a problem is found
+     *
+     * @param  array $tags Array of tags
+     * @throws Zend_Cache_Exception
+     * @return void
+     */
+    private static function _validateTagsArray($tags)
+    {
+        if (!is_array($tags)) {
+            Zend_Cache::throwException('Invalid tags array : must be an array');
+        }
+        foreach($tags as $tag) {
+            self::_validateIdOrTag($tag);
+        }
+        reset($tags);
+    }
+
+    /**
      * Make sure if we enable logging that the Zend_Log class
      * is available.
      * Create a default log object if none is set.
@@ -575,29 +619,10 @@ class Zend_Cache_Core
      */
     private function _id($id)
     {
-        if (!is_null($id) && isset($this->_options['cache_id_prefix'])) {
+        if (($id !== null) && isset($this->_options['cache_id_prefix'])) {
             return $this->_options['cache_id_prefix'] . $id; // return with prefix
         }
         return $id; // no prefix, just return the $id passed
-    }
-
-    /**
-     * Validate a cache id or a tag (security, reliable filenames, reserved prefixes...)
-     *
-     * Throw an exception if a problem is found
-     *
-     * @param  string $string Cache id or tag
-     * @throws Zend_Cache_Exception
-     * @return void
-     */
-    private static function _validateIdOrTag($string)
-    {
-        if (!is_string($string)) {
-            Zend_Cache::throwException('Invalid id or tag : must be a string');
-        }
-        if (substr($string, 0, 9) == 'internal-') {
-            Zend_Cache::throwException('"internal-*" ids or tags are reserved');
-        }
     }
 
 }

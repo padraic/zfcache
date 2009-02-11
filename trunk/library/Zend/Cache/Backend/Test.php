@@ -101,7 +101,6 @@ class Zend_Cache_Backend_Test extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function load($id, $doNotTestCacheValidity = false)
     {
-        self::_validateIdOrTag($id);
         $this->_addLog('get', array($id, $doNotTestCacheValidity));
         if ($id=='false') {
             return false;
@@ -132,7 +131,6 @@ class Zend_Cache_Backend_Test extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function test($id)
     {
-        self::_validateIdOrTag($id);
         $this->_addLog('test', array($id));
         if ($id=='false') {
             return false;
@@ -160,8 +158,6 @@ class Zend_Cache_Backend_Test extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function save($data, $id, $tags = array(), $specificLifetime = false)
     {
-        self::_validateIdOrTag($id);
-        self::_validateTagsArray($tags);
         $this->_addLog('save', array($data, $id, $tags));
         if ($id=='false') {
             return false;
@@ -180,7 +176,6 @@ class Zend_Cache_Backend_Test extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function remove($id)
     {
-        self::_validateIdOrTag($id);
         $this->_addLog('remove', array($id));
         if ($id=='false') {
             return false;
@@ -208,7 +203,6 @@ class Zend_Cache_Backend_Test extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
-        self::_validateTagsArray($tags);
         $this->_addLog('clean', array($mode, $tags));
         if ($mode=='false') {
             return false;

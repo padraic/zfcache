@@ -45,7 +45,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      */
     const TAGS_UNSUPPORTED_BY_CLEAN_OF_XCACHE_BACKEND = 'Zend_Cache_Backend_Xcache::clean() : tags are unsupported by the Xcache backend';
     const TAGS_UNSUPPORTED_BY_SAVE_OF_XCACHE_BACKEND =  'Zend_Cache_Backend_Xcache::save() : tags are unsupported by the Xcache backend';
-
+    
     /**
      * Available options
      *
@@ -88,7 +88,6 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      */
     public function load($id, $doNotTestCacheValidity = false)
     {
-        self::_validateIdOrTag($id);
         if ($doNotTestCacheValidity) {
             $this->_log("Zend_Cache_Backend_Xcache::load() : \$doNotTestCacheValidity=true is unsupported by the Xcache backend");
         }
@@ -107,7 +106,6 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      */
     public function test($id)
     {
-        self::_validateIdOrTag($id);
         if (xcache_isset($id)) {
             $tmp = xcache_get($id);
             if (is_array($tmp)) {
@@ -131,8 +129,6 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      */
     public function save($data, $id, $tags = array(), $specificLifetime = false)
     {
-        self::_validateIdOrTag($id);
-        self::_validateTagsArray($tags);
         $lifetime = $this->getLifetime($specificLifetime);
         $result = xcache_set($id, array($data, time()), $lifetime);
         if (count($tags) > 0) {
@@ -149,7 +145,6 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      */
     public function remove($id)
     {
-        self::_validateIdOrTag($id);
         return xcache_unset($id);
     }
 
@@ -170,7 +165,6 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
-        self::_validateTagsArray($tags);
         switch ($mode) {
             case Zend_Cache::CLEANING_MODE_ALL:
                 // Necessary because xcache_clear_cache() need basic authentification

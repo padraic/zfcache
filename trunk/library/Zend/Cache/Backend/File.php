@@ -116,7 +116,7 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
     public function __construct(array $options = array())
     {
         parent::__construct($options);
-        if (!is_null($this->_options['cache_dir'])) { // particular case for this option
+        if ($this->_options['cache_dir'] !== null) { // particular case for this option
             $this->setCacheDir($this->_options['cache_dir']);
         } else {
             $this->setCacheDir(self::getTmpDir() . DIRECTORY_SEPARATOR, false);
@@ -171,7 +171,6 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function load($id, $doNotTestCacheValidity = false)
     {
-        self::_validateIdOrTag($id);
         if (!($this->_test($id, $doNotTestCacheValidity))) {
             // The cache is not hit !
             return false;
@@ -200,7 +199,6 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function test($id)
     {
-        self::_validateIdOrTag($id);
         clearstatcache();
         return $this->_test($id, false);
     }
@@ -219,8 +217,6 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function save($data, $id, $tags = array(), $specificLifetime = false)
     {
-        self::_validateIdOrTag($id);
-        self::_validateTagsArray($tags);
         clearstatcache();
         $file = $this->_file($id);
         $path = $this->_path($id);
@@ -261,7 +257,6 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function remove($id)
     {
-        self::_validateIdOrTag($id);
         $file = $this->_file($id);
         return ($this->_delMetadatas($id) && $this->_remove($file));
     }
@@ -285,7 +280,6 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
-        self::_validateTagsArray($tags);
         // We use this private method to hide the recursive stuff
         clearstatcache();
         return $this->_clean($this->_options['cache_dir'], $mode, $tags);
@@ -818,7 +812,7 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
      */
     private function _expireTime($lifetime)
     {
-        if (is_null($lifetime)) {
+        if ($lifetime === null) {
             return 9999999999;
         }
         return time() + $lifetime;
@@ -913,10 +907,10 @@ class Zend_Cache_Backend_File extends Zend_Cache_Backend implements Zend_Cache_B
         }
         $partsArray = $this->_path($id, true);
         foreach ($partsArray as $part) {
-        	if (!is_dir($part)) {
-            	@mkdir($part, $this->_options['hashed_directory_umask']);
-        	    @chmod($part, $this->_options['hashed_directory_umask']); // see #ZF-320 (this line is required in some configurations)
-        	}
+            if (!is_dir($part)) {
+                @mkdir($part, $this->_options['hashed_directory_umask']);
+                @chmod($part, $this->_options['hashed_directory_umask']); // see #ZF-320 (this line is required in some configurations)
+            }
         }
         return true;
     }

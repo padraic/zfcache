@@ -84,7 +84,6 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
      */
     public function load($id, $doNotTestCacheValidity = false)
     {
-        self::_validateIdOrTag($id);
         // doNotTestCacheValidity implemented by giving zero lifetime to the cache
         if ($doNotTestCacheValidity) {
             $lifetime = 0;
@@ -108,7 +107,6 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
      */
     public function test($id)
     {
-        self::_validateIdOrTag($id);
         $result = output_cache_get($id, $this->_directives['lifetime']);
         if ($result) {
             return $result[1];
@@ -130,8 +128,6 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
      */
     public function save($data, $id, $tags = array(), $specificLifetime = false)
     {
-        self::_validateIdOrTag($id);
-        self::_validateTagsArray($tags);
         if (!($specificLifetime === false)) {
             $this->_log("Zend_Cache_Backend_ZendPlatform::save() : non false specifc lifetime is unsuported for this backend");
         }
@@ -163,7 +159,6 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
      */
     public function remove($id)
     {
-        self::_validateIdOrTag($id);
         return output_cache_remove_key($id);
     }
 
@@ -188,7 +183,6 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
-        self::_validateTagsArray($tags);
         switch ($mode) {
             case Zend_Cache::CLEANING_MODE_ALL:
             case Zend_Cache::CLEANING_MODE_OLD:
@@ -281,7 +275,7 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
                     $result = ($this->_remove($file)) && ($result);
                 } else if ($mode == Zend_Cache::CLEANING_MODE_OLD) {
                     // Files older than lifetime get deleted from cache
-                    if (!is_null($this->_directives['lifetime'])) {
+                    if ($this->_directives['lifetime'] !== null) {
                         if ((time() - @filemtime($file)) > $this->_directives['lifetime']) {
                             $result = ($this->_remove($file)) && ($result);
                         }
@@ -308,7 +302,7 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
             # If we can't remove the file (because of locks or any problem), we will touch
             # the file to invalidate it
             $this->_log("Zend_Cache_Backend_ZendPlatform::_remove() : we can't remove $file => we are going to try to invalidate it");
-            if (is_null($this->_directives['lifetime'])) {
+            if ($this->_directives['lifetime'] === null) {
                 return false;
             }
             if (!file_exists($file)) {

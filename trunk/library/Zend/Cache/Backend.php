@@ -149,8 +149,8 @@ class Zend_Cache_Backend
      * Return true if the automatic cleaning is available for the backend
      *
      * DEPRECATED : use getCapabilities() instead
-     *
-     * @deprecated
+     * 
+     * @deprecated 
      * @return boolean
      */
     public function isAutomaticCleaningAvailable()
@@ -234,49 +234,6 @@ class Zend_Cache_Backend
         }
         $logger = $this->_directives['logger'];
         $logger->log($message, $priority);
-    }
-
-    /**
-     * Validate a cache id or a tag (security, reliable filenames, reserved prefixes...)
-     *
-     * Throw an exception if a problem is found
-     *
-     * @param  string $string Cache id or tag
-     * @throws Zend_Cache_Exception
-     * @return void
-     */
-    protected static function _validateIdOrTag($string)
-    {
-        if (!is_string($string)) {
-            Zend_Cache::throwException('Invalid id or tag : must be a string');
-        }
-        // internal only checked in Frontend - not here!
-        if (substr($string, 0, 9) == 'internal-') {
-            return;
-        }
-        if (!preg_match('~^[\w]+$~D', $string)) {
-            Zend_Cache::throwException("Invalid id or tag '$string' : must use only [a-zA-Z0-9_]");
-        }
-    }
-
-    /**
-     * Validate a tags array (security, reliable filenames, reserved prefixes...)
-     *
-     * Throw an exception if a problem is found
-     *
-     * @param  array $tags Array of tags
-     * @throws Zend_Cache_Exception
-     * @return void
-     */
-    protected static function _validateTagsArray($tags)
-    {
-        if (!is_array($tags)) {
-            Zend_Cache::throwException('Invalid tags array : must be an array');
-        }
-        foreach($tags as $tag) {
-            self::_validateIdOrTag($tag);
-        }
-        reset($tags);
     }
 
 }
